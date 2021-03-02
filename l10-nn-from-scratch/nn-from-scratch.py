@@ -19,9 +19,11 @@ def initialize_parameters(
     Returns:
         Tuple[Tensor, Tensor, Tensor, Tensor]: weights and biases for 2 layers
     """
-    # TODO: implement this function
+    W1 = torch.randn(n1, n0) * scale
+    b1 = torch.zeros(n1, 1)
+    W2 = torch.randn(n2, n1) * scale
+    b2 = torch.zeros(n2, 1) 
     return W1, b1, W2, b2
-
 
 def forward_propagation(
     A0: Tensor, W1: Tensor, b1: Tensor, W2: Tensor, b2: Tensor
@@ -39,8 +41,11 @@ def forward_propagation(
         Tuple[Tensor, Tensor]: activations/outputs for layers 1 and 2
     """
     # TODO: implement this function
+    Z1 = W1 @ A0 + b1
+    A1 = torch.sigmoid(Z1)
+    Z2 = W2 @ A1 + b2
+    A2 = torch.sigmoid(Z2)
     return A1, A2.T
-
 
 def get_predictions_sigmoid(
     A0: Tensor, W1: Tensor, b1: Tensor, W2: Tensor, b2: Tensor
@@ -58,6 +63,7 @@ def get_predictions_sigmoid(
         Tensor: binary predictions of a 3-layer neural network
     """
     # TODO: implement this function
+    _, A2 = forward_propagation(A0, W1, b1, W2, b2)
     return A2.round()
 
 
@@ -77,6 +83,13 @@ def backward_propagation(
         Tuple[Tensor, Tensor, Tensor, Tensor]: gradients for weights and biases
     """
     # TODO: implement this function
+    m = len(Y)
+    dZ2 = (A2 - Y)
+    dW2 = (1/m) * (dZ2 @ A1.T)
+    db2 = (1/m) * dZ2.sum(axis=1, keepdims=True)
+    dZ1 = W2.T @ dZ2 * (A1 * (1 - A1))
+    dW1 = (1/m) * dZ1 @ A0.T
+    db1 = (1/m) * dZ1.sum(axis=1, keepdims=True)
     return dW1, db1, dW2, db2
 
 
@@ -108,6 +121,10 @@ def update_parameters(
         Tuple[Tensor, Tensor, Tensor, Tensor]: updated network parameters
     """
     # TODO: implement this function
+    W1 = W1 - lr * dW1
+    b1 = b1 - lr * db1
+    W2 = W2 - lr * dW2
+    b2 = b2 - lr * db2
     return W1, b1, W2, b2
 
 
@@ -122,6 +139,9 @@ def compute_cost(A2: Tensor, Y: Tensor) -> float:
         float: computed cost
     """
     # TODO: implement this function
+    m = Y.shape[1]
+    losses = -(Y * torch.log(A2) + (1 - Y) * torch.log(1 - A2))
+    cost = (1 / m) * losses.sum(dim=1, keepdims=True)
     return cost
 
 
@@ -146,14 +166,25 @@ def learn(
     Returns:
         Tuple[Tensor, Tensor, Tensor, Tensor]: parameters of a 3-layer neural network
     """
-    # TODO: implement this function
     # Steps:
     # 1. initialize parameters
-    # 2. loop
-    #   1. compute outputs with forward propagation
-    #   2. compute cost (for analysis)
-    #   3. compute gradients with backward propagation
-    #   4. update parameters
-    # 3. return final parameters
+    W1, b1, W2, b2 = initialize_parameters(n0, n1, n2, param_scale)
 
+    # 2. loop
+    for epoch in range(num_epochs):
+        #   1. compute outputs with forward propagation
+        A1, A2 = forward_propagation(X, W1, b1, W2, b2)
+
+        #   2. compute cost (for analysis)
+        cost = compute_cost(A2, Y)
+
+        #   3. compute gradients with backward propagation
+        dW1, db1, dW2, db2 = backward_propagation(X, A1, A2, Y, W2)
+
+        #   4. update parameters
+        W1, b1, W2, b2 = update_parameters(
+            W1, b1, W2, b2, dW1, db1, dW2, db2, learning_rate
+        )
+        
+    # 3. return final parameters
     return W1, b1, W2, b2
