@@ -40,12 +40,16 @@ def forward_propagation(
     Returns:
         Tuple[Tensor, Tensor]: outputs for layers 1 (n1, m) and 2 (n2, m)
     """
-    # TODO: implement this function
-    Z1 = W1 @ A0 + b1
+    # Step 1: Compute output of first layer 
+    Z1 = W1 @ A0 + b1 
     A1 = torch.sigmoid(Z1)
+
+    # Step 2: Compute output of second layer 
     Z2 = W2 @ A1 + b2
     A2 = torch.sigmoid(Z2)
-    return A1, A2.T
+
+    # Return outputs of both layers 
+    return A1, A2
 
 def get_predictions_sigmoid(
     A0: Tensor, W1: Tensor, b1: Tensor, W2: Tensor, b2: Tensor
@@ -62,8 +66,9 @@ def get_predictions_sigmoid(
     Returns:
         Tensor: binary predictions of a 3-layer neural network
     """
-    # TODO: implement this function
-    _, A2 = forward_propagation(A0, W1, b1, W2, b2)
+    # Get neural network output 
+    A1, A2 = forward_propagation(A0, W1, b1, W2, b2)
+    # Round to get predictions
     return A2.round()
 
 
@@ -82,14 +87,14 @@ def backward_propagation(
     Returns:
         Tuple[Tensor, Tensor, Tensor, Tensor]: gradients for weights and biases
     """
-    # TODO: implement this function
     m = len(Y)
-    dZ2 = (A2 - Y)
-    dW2 = (1/m) * (dZ2 @ A1.T)
-    db2 = (1/m) * dZ2.sum(axis=1, keepdims=True)
+    # Compute partial derivatives, reusing previously computed terms as you go
+    dZ2 = (A2 - Y) 
+    dW2 = (1/m) * (dZ2 @ A1.T) 
+    db2 = (1/m) * dZ2.sum(axis=1, keepdims=True) # Not sure why keepdims (took this from notes)
     dZ1 = W2.T @ dZ2 * (A1 * (1 - A1))
     dW1 = (1/m) * dZ1 @ A0.T
-    db1 = (1/m) * dZ1.sum(axis=1, keepdims=True)
+    db1 = (1/m) * dZ1.sum(axis=1, keepdims=True) # Not sure why keepdims (took this from notes)
     return dW1, db1, dW2, db2
 
 
@@ -120,9 +125,10 @@ def update_parameters(
     Returns:
         Tuple[Tensor, Tensor, Tensor, Tensor]: updated network parameters
     """
-    # TODO: implement this function
+    # Update layer 1 parameters 
     W1 = W1 - lr * dW1
     b1 = b1 - lr * db1
+    # Update layer 2 parameters
     W2 = W2 - lr * dW2
     b2 = b2 - lr * db2
     return W1, b1, W2, b2
@@ -138,10 +144,9 @@ def compute_cost(A2: Tensor, Y: Tensor) -> Tensor:
     Returns:
         float: computed cost
     """
-    # TODO: implement this function
     m = Y.shape[1]
     losses = -(Y * torch.log(A2) + (1 - Y) * torch.log(1 - A2))
-    cost = (1 / m) * losses.sum(dim=1, keepdims=True)
+    cost = (1 / m) * losses.sum(dim=1, keepdims=True) # Not sure why keepdims (took this from notes)
     return cost
 
 
@@ -168,6 +173,9 @@ def learn(
     """
     # Steps:
     # 1. initialize parameters
+    n0 = X.shape[0]
+    n1 = num_hidden
+    n2 = Y.shape[0]
     W1, b1, W2, b2 = initialize_parameters(n0, n1, n2, param_scale)
 
     # 2. loop
