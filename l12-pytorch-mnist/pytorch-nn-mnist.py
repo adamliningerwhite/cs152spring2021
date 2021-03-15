@@ -114,7 +114,7 @@ def learn_nn_mnist(
 
     # TODO: Create a CrossEntropyLoss function by looking at the documentation here:
     # https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html
-    cross_entropy_loss = ...
+    cross_entropy_loss = torch.nn.CrossEntropyLoss()
 
     train_costs = []
     valid_costs = []
@@ -129,7 +129,7 @@ def learn_nn_mnist(
 
         # Forward (compute the neural network output)
         # TODO: compute the outputs of the neural network model
-        train_yhat = ...
+        train_yhat = model(train_imgs)
 
         # Compute cost (average loss over all examples)
         train_cost = cross_entropy_loss(train_yhat, train_trgs)
@@ -157,12 +157,14 @@ def learn_nn_mnist(
 
         # Backward (compute gradients)
         # TODO: In two steps, zero out the model gradients and compute new gradients
+        model.zero_grad()
+        train_cost.backward()
 
         # Update parameters
         with torch.no_grad():
             for param in model.parameters():
                 # TODO: update the model parameters
-                param -= ...
+                param -= learning_rate * param.grad
 
         print(msg, f"  ({time() - epoch_start:.3f}s)")
 
