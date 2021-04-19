@@ -12,8 +12,8 @@ from time import time
 from typing import Tuple, List
 
 
-def get_mnist_loader(path: str, train: bool) -> Tuple[Tensor, Tensor]:
-    """Return an MNIST dataloader for all ten digits.
+def get_mnist_set(path: str, train: bool) -> Tuple[Tensor, Tensor]:
+    """Return an MNIST dataset for all ten digits.
 
     Args:
         path (str): Path to store/find the MNIST dataset
@@ -52,8 +52,8 @@ def get_mnist_data(path: str) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     Returns:
         Tuple[Tensor, Tensor, Tensor, Tensor]: Training images and labels, then validation
     """
-    train_imgs, train_trgs = get_mnist_loader(path, train=True)
-    valid_imgs, valid_trgs = get_mnist_loader(path, train=False)
+    train_imgs, train_trgs = get_mnist_set(path, train=True)
+    valid_imgs, valid_trgs = get_mnist_set(path, train=False)
 
     return train_imgs, train_trgs, valid_imgs, valid_trgs
 
